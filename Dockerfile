@@ -5,13 +5,11 @@ WORKDIR /app/dnstt-server
 RUN go build
 
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates python3
+RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/dnstt-server/dnstt-server /usr/local/bin/dnstt-server
 
 WORKDIR /app
 
-# Скрипт запуска: генерирует ключи, выводит публичный ключ в логи, 
-# запускает веб-заглушку для Render на $PORT и сам DNSTT-сервер в режиме DoH на порту 8080
 RUN echo -e '#!/bin/sh\n\
 dnstt-server -gen-key -privkey-file server.key -pubkey-file server.pub\n\
 echo "========================================="\n\
@@ -19,12 +17,11 @@ echo "=== СКОПИРУЙТЕ ЭТОТ КЛЮЧ ДЛЯ КЛИЕНТА ==="\n\
 cat server.pub\n\
 echo ""\n\
 echo "========================================="\n\
-# Запускаем простейший веб-сервер на Python, чтобы Render проходил Health Check\n\
-python3 -m http.server $PORT &\n\
-# Запускаем DNSTT в режиме DoH на порту 8080 (его мы пробросим в Render)\n\
-exec dnstt-server -doh :8080 -privkey-file server.key t.datatestproject01.tech 127.0.0.1:1080\n\
+# Запускаем DNSTT напрямую на порт 10000, который Render ждет по умолчанию\n\
+exec dnstt-server -doh :10000 -privkey-file server.key t.datatestproject01.tech 127.0.0.1:1080\n\
 ' > entrypoint.sh && chmod +x entrypoint.sh
 
-EXPOSE 8080
+# Явно говорим Render, какой порт слушать
+EXPOSE 10000
 
 CMD ["./entrypoint.sh"]
