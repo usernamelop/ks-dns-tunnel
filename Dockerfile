@@ -1,6 +1,6 @@
 FROM golang:alpine AS builder
 RUN apk add --no-cache git && git clone https://github.com/dnstt-xyz/dnstt_xyz_app.git /app
-WORKDIR /app/dnstt-server
+WORKDIR /go_src/dnstt-server
 RUN go build
 
 FROM alpine:latest
