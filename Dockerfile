@@ -17,11 +17,10 @@ echo "=== СКОПИРУЙТЕ ЭТОТ КЛЮЧ ДЛЯ КЛИЕНТА ==="\n\
 cat server.pub\n\
 echo ""\n\
 echo "========================================="\n\
-# Запускаем DNSTT напрямую на порт 10000, который Render ждет по умолчанию\n\
+# В оригинальной версии флаг -doh работает отлично\n\
 exec dnstt-server -doh :10000 -privkey-file server.key t.datatestproject01.tech 127.0.0.1:1080\n\
 ' > entrypoint.sh && chmod +x entrypoint.sh
 
-# Явно говорим Render, какой порт слушать
 EXPOSE 10000
 
 CMD ["./entrypoint.sh"]
