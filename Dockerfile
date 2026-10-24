@@ -15,9 +15,10 @@ COPY --from=builder /app/web_server /usr/local/bin/web_server
 # Настройка безопасного внутреннего SOCKS5-прокси
 RUN echo -e 'logoutput: stderr\ninternal: 127.0.0.1 port = 1080\nexternal: eth0\nsocksmethod: none\nclientmethod: none\nclient pass {\n    from: 0.0.0.0/0 to: 0.0.0.0/0\n}\nsocks pass {\n    from: 0.0.0.0/0 to: 0.0.0.0/0\n}' > /etc/sockd.conf
 
-# Запуск заглушки в фоновом режиме (&) и запуск DNSTT на UDP-порту 5353
+# Запуск заглушки и настройка DNSTT строго в режиме TCP на порту хостинга
 CMD web_server & \
     dnstt-server -gen-key -privkey-file /tmp/server.key -pubkey-file /tmp/server.pub && \
     echo "=== СКОПИРУЙТЕ ЭТОТ КЛЮЧ ДЛЯ WINDOWS ===" && cat /tmp/server.pub && echo "=========================================" && \
     sockd -D && \
-    dnstt-server -udp :5353 -privkey-file /tmp/server.key t.datatestproject01.tech 127.0.0.1:1080
+    dnstt-server -tcp :$PORT -privkey-file /tmp/server.key t.datatestproject01.tech 127.0.0.1:1080
+
